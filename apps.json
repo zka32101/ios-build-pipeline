@@ -61,16 +61,16 @@
     {
       "key": "nihon_future_map",
       "display_name": "日本未来地図（政策投票マップ）",
-      "repo": "zka32101/geography_puzzle_king",
-      "private": false,
-      "app_subdir": "apps/nihon_future_map",
+      "repo": "zka32101/seisaku_tohyo_map",
+      "private": true,
+      "app_subdir": ".",
       "bundle_id": "com.yourwish.japanfuturemap",
       "team_id": null,
       "vault_profile": "nihon_future_map/JapanFutureMap_App_Store.mobileprovision",
       "vault_p12": "nihon_future_map/ios_distribution.p12",
       "p12_source_key": null,
-      "cert_status": "needs_confirmation",
-      "cert_note": "リポジトリ候補が2つとも「生きている」ことを確認: geography_puzzle_king内apps/nihon_future_map(直近コミット2026-10-01 13:22、独自CI有り)と、単体repoのseisaku_tohyo_map(private、直近コミット同日11:06、こちらも独自CI・独自シークレットで機能中)。どちらも放置された旧版ではなく並行して開発されている可能性が高いため、どちらを本物として扱うか必ずユーザーに確認すること。確認が取れるまで自動実行の対象外とする。"
+      "cert_status": "ready",
+      "cert_note": "ユーザー確認により zka32101/seisaku_tohyo_map (private) を正とすることが確定した(geography_puzzle_king内apps/nihon_future_mapは不採用)。bundle id com.yourwish.japanfuturemap は本リポジトリのpubspec.yaml/Xcodeプロジェクトと一致を確認済み。privateリポジトリのため APPS_READ_PAT の設定が必須。"
     },
     {
       "key": "okane_kore",

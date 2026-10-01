@@ -20,6 +20,7 @@ macOS ランナーは GitHub Actions 上で10倍課金になるため、この�
 |---|---|---|
 | `geography_puzzle_king` | `zka32101/geography_puzzle_king`（モノレポ `apps/geography_puzzle_king`） | 配布証明書+プロファイルあり |
 | `okane_kore` | `zka32101/kinnyu` | 配布証明書+プロファイルあり |
+| `nihon_future_map` | `zka32101/seisaku_tohyo_map`（private） | ユーザー確認済み。`geography_puzzle_king`内`apps/nihon_future_map`は不採用とした。privateリポジトリのため`APPS_READ_PAT`が必須 |
 
 ### 要確認（`cert_status: "needs_confirmation"`。確認が取れるまで自動スキップ）
 
@@ -28,7 +29,6 @@ macOS ランナーは GitHub Actions 上で10倍課金になるため、この�
 | `kokugo-kore` | provisioning profileのみ、.p12が無い | `geography_puzzle_king` の配布証明書を共用して良いか。両アプリとも Team ID `6UWJGP52W5` で一致しており、`kokugo-kore` の `ExportOptions.plist` は証明書を `Apple Distribution`（総称）で指定しているため技術的には共用可能な可能性が高いが、`.p12` のTeam IDは復号しないと確認できないため最終確認が必要 |
 | `japan_explorer` | provisioning profileのみ、.p12が無い | 同上（Team ID `6UWJGP52W5` で一致） |
 | `kotoba-e` | .p12のみ、provisioning profileが無い。さらに `ios/ExportOptions.plist` 自体がリポジトリに存在しないことを確認済み（他5アプリには全て存在） | 配布用provisioning profileの新規発行、および `ExportOptions.plist` の新規作成が必要 |
-| `nihon_future_map` | リポジトリ候補が2つとも「生きている」ことを確認した | `zka32101/geography_puzzle_king` 内 `apps/nihon_future_map`（公開、直近コミット2026-10-01 13:22、独自CIあり）と `zka32101/seisaku_tohyo_map`（非公開、直近コミット同日11:06、こちらも独自CI・独自シークレットで現役稼働中）の両方に最近のコミットがあり、どちらかが放置された旧版とは断定できない。**どちらを正とするかユーザーの確認が必須** |
 
 ### 証明書が未発行（対象外。Apple Developer Programでの新規発行が必要）
 
@@ -43,7 +43,7 @@ macOS ランナーは GitHub Actions 上で10倍課金になるため、この�
 |---|---|---|
 | `CERT_PASSPHRASE` | `ios-certs-vault` の復号パスフレーズ | ユーザー（パスワードマネージャー等で既に保管済みのはず） |
 | `CERTS_VAULT_PAT` | `zka32101/ios-certs-vault`（private）を読み取るためのPAT（`contents:read`で十分。Fine-grained PAT推奨） | ユーザー |
-| `APPS_READ_PAT` | 対象アプリに private リポジトリがある場合の読み取り用PAT（例: `seisaku_tohyo_map`を使う場合） | ユーザー（全アプリが public ならスキップ可） |
+| `APPS_READ_PAT` | `zka32101/seisaku_tohyo_map`（`nihon_future_map`、private）を読み取るためのPAT。`CERTS_VAULT_PAT`と同様にFine-grained PAT・`contents:read`で可 | ユーザー（必須。未設定だと`nihon_future_map`のみ自動スキップされる） |
 | `IOS_P12_PASSWORD` | `.p12`（配布証明書）自体のPKCS12パスワード | ユーザー（vaultのREADMEには含まれていないため別途確認が必要） |
 | `GDRIVE_SA_KEY_JSON` | Google Drive用サービスアカウントキー(JSON)の内容そのもの | ユーザー（下記手順） |
 | `GDRIVE_APK_FOLDER_ID` | アップロード先 `apk` フォルダの Google Drive フォルダID | ユーザー |
