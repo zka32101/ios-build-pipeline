@@ -18,7 +18,7 @@ macOS ランナーは GitHub Actions 上で10倍課金になるため、この�
 
 | アプリキー | リポジトリ | 備考 |
 |---|---|---|
-| `geography_puzzle_king` | `zka32101/geography_puzzle_king`（モノレポ `apps/geography_puzzle_king`） | 配布証明書+プロファイルあり |
+| `geography_puzzle_king` | `zka32101/geography_puzzle_king`（モノレポ `apps/geography_puzzle_king`） | 「ゲームで学ぶ都道府県」（47都道府県タワーディフェンス）。配布証明書+プロファイルあり |
 | `okane_kore` | `zka32101/kinnyu` | 配布証明書+プロファイルあり |
 | `nihon_future_map` | `zka32101/seisaku_tohyo_map`（private） | ユーザー確認済み。`geography_puzzle_king`内`apps/nihon_future_map`は不採用とした。privateリポジトリのため`APPS_READ_PAT`が必須 |
 
@@ -46,6 +46,7 @@ macOS ランナーは GitHub Actions 上で10倍課金になるため、この�
 | `social_quiz_app` | 小学コレ！社会（推定） | Bundle ID から推定。証明書一式が未作成 |
 | `kanken` | 小学コレ！漢検 | README記載で確認済み。**`ios/`ディレクトリ自体が存在せず、iOSターゲット未作成**。証明書以前にXcodeプロジェクトの作成が必要 |
 | `eigo` | 英語コレ！ | 小学コレ7アプリの正式メンバーか未確認（独立ブランド名・別Bundle ID名前空間）。証明書一式が未作成 |
+| `goen` | 碁縁（GoEn）大人向け囲碁学習アプリ | 小学コレシリーズとは別の独立アプリ。Android先行開発(155フェーズ)で**`ios/`ディレクトリ自体が存在せず**iOSターゲット未作成。証明書以前にXcodeプロジェクトの作成が必要 |
 
 ## 必要な GitHub Secrets（このリポジトリに設定）
 

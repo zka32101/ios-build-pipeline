@@ -140,6 +140,14 @@
       "note": "READMEに『小学コレ！漢検』と明記あり。ただし ios/ ディレクトリ自体が存在せず、iOSターゲット未作成(Androidのみ先行開発中とみられる)。証明書発行以前にXcodeプロジェクトの作成が必要。"
     },
     {
+      "key": "goen",
+      "display_name": "碁縁（GoEn） - Premium Go Learning App",
+      "repo": "zka32101/goen",
+      "private": false,
+      "bundle_id": "com.yourwish.goen",
+      "note": "小学コレシリーズとは別の独立アプリ(大人向け囲碁学習アプリ)。Android Application IDは com.yourwish.goen だが、リポジトリに ios/ ディレクトリ自体が存在せず iOSターゲット未作成(Android先行開発、155フェーズ分の開発履歴あり)。証明書発行以前にXcodeプロジェクトの作成が必要。"
+    },
+    {
       "key": "eigo",
       "display_name": "英語コレ！",
       "repo": "zka32101/eigo",
