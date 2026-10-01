@@ -14,7 +14,7 @@
       "vault_p12": null,
       "p12_source_key": "geography_puzzle_king",
       "cert_status": "needs_confirmation",
-      "cert_note": "vaultにはprovisioning profileのみ。.p12はgeography_puzzle_kingと共用できる想定だが未確認。実行前にユーザー確認が必要。"
+      "cert_note": "vaultにはprovisioning profileのみ。ExportOptions.plistのsigningCertificateは'Apple Distribution'(総称指定)でTeam ID 6UWJGP52W5。geography_puzzle_kingの.p12も同じTeamであれば共用可能な可能性が高いが、.p12のTeam IDは復号しないと確認できないため最終確認が必要。"
     },
     {
       "key": "japan_explorer",
@@ -28,7 +28,7 @@
       "vault_p12": null,
       "p12_source_key": "geography_puzzle_king",
       "cert_status": "needs_confirmation",
-      "cert_note": "vaultにはprovisioning profileのみ。.p12はgeography_puzzle_kingと共用できる想定だが未確認。実行前にユーザー確認が必要。"
+      "cert_note": "vaultにはprovisioning profileのみ。ExportOptions.plistのTeam IDは6UWJGP52W5(kokugo-koreと同一)。geography_puzzle_kingの.p12も同じTeamであれば共用可能な可能性が高いが、.p12のTeam IDは復号しないと確認できないため最終確認が必要。"
     },
     {
       "key": "geography_puzzle_king",
@@ -56,7 +56,7 @@
       "vault_p12": "kotoba-e/ios_distribution.p12",
       "p12_source_key": null,
       "cert_status": "needs_confirmation",
-      "cert_note": "vaultには.p12のみでprovisioning profileが無い。配布用provisioning profileの用意が必要。"
+      "cert_note": "vaultには.p12のみでprovisioning profileが無い。配布用provisioning profileの用意が必要。さらにリポジトリ本体に ios/ExportOptions.plist が存在しないことを確認済み(他の5アプリには全て存在)。ExportOptions.plistの新規作成も必要。"
     },
     {
       "key": "nihon_future_map",
@@ -69,8 +69,8 @@
       "vault_profile": "nihon_future_map/JapanFutureMap_App_Store.mobileprovision",
       "vault_p12": "nihon_future_map/ios_distribution.p12",
       "p12_source_key": null,
-      "cert_status": "ready",
-      "cert_note": "リポジトリ候補が2つ存在(geography_puzzle_king内のapps/nihon_future_mapと、単体repoのseisaku_tohyo_map(private))。CI実績のある前者を採用。要ユーザー最終確認。"
+      "cert_status": "needs_confirmation",
+      "cert_note": "リポジトリ候補が2つとも「生きている」ことを確認: geography_puzzle_king内apps/nihon_future_map(直近コミット2026-10-01 13:22、独自CI有り)と、単体repoのseisaku_tohyo_map(private、直近コミット同日11:06、こちらも独自CI・独自シークレットで機能中)。どちらも放置された旧版ではなく並行して開発されている可能性が高いため、どちらを本物として扱うか必ずユーザーに確認すること。確認が取れるまで自動実行の対象外とする。"
     },
     {
       "key": "okane_kore",
