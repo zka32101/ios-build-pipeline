@@ -1,0 +1,223 @@
+name: Build iOS Apps (sequential)
+
+# =============================================================================
+# 複数アプリの iOS ビルドを1つずつ直列で実行し、できた .ipa だけを
+# Google Drive の「apk」フォルダにコピーする集中パイプライン。
+#
+# - macOS ランナーは10倍課金のため、workflow_dispatch（手動実行）限定。
+# - matrix戦略は使わず、単一ジョブの中で apps.json を読み込んで
+#   1アプリずつ順番に処理する（同時並行させない）。
+# - apps.json に無いアプリ/証明書が未確認(cert_status != "ready")のアプリは
+#   自動でスキップされる。
+#
+# 事前に必要な GitHub Secrets（リポジトリ設定 → Secrets and variables → Actions）:
+#   CERT_PASSPHRASE       ios-certs-vault の復号パスフレーズ
+#   CERTS_VAULT_PAT       zka32101/ios-certs-vault（private）を checkout するための
+#                         読み取り専用PAT（contents:read で十分）
+#   APPS_READ_PAT         対象アプリリポジトリに private なものがある場合の読み取り用PAT
+#                         （全て public の場合は未設定でも動くが、無いと private repo はスキップされる）
+#   IOS_P12_PASSWORD      .p12 (配布証明書) のPKCS12パスワード
+#                         （全アプリで共通の場合のみ。アプリ毎に異なる場合は要拡張）
+#   GDRIVE_SA_KEY_JSON    Google Drive サービスアカウントキー(JSON)の中身そのもの
+#   GDRIVE_APK_FOLDER_ID  アップロード先 Drive フォルダ（apkフォルダ）のフォルダID
+#
+# 詳しいセットアップ手順は README.md を参照。
+# =============================================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      apps:
+        description: '対象アプリキー（apps.json の key）をカンマ区切りで指定。"all" で全対象アプリ。'
+        required: false
+        default: 'all'
+        type: string
+      flutter_version:
+        description: '使用する Flutter バージョン'
+        required: false
+        default: '3.x'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and upload (sequential)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout ios-build-pipeline
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ inputs.flutter_version }}
+          channel: 'stable'
+
+      - name: Checkout ios-certs-vault (private)
+        env:
+          PAT: ${{ secrets.CERTS_VAULT_PAT }}
+        run: |
+          set -e
+          if [ -z "$PAT" ]; then
+            echo "::error::CERTS_VAULT_PAT が未設定です。zka32101/ios-certs-vault を checkout できません。"
+            exit 1
+          fi
+          git clone --depth 1 "https://x-access-token:${PAT}@github.com/zka32101/ios-certs-vault.git" _vault
+
+      - name: Decrypt all certs
+        env:
+          CERT_PASSPHRASE: ${{ secrets.CERT_PASSPHRASE }}
+        run: |
+          set -e
+          if [ -z "$CERT_PASSPHRASE" ]; then
+            echo "::error::CERT_PASSPHRASE が未設定です。"
+            exit 1
+          fi
+          cd _vault
+          CERT_PASSPHRASE="$CERT_PASSPHRASE" ./decrypt.sh ../_vault_decrypted
+          cd ..
+          find _vault_decrypted -type f
+
+      - name: Setup Google Drive (rclone)
+        env:
+          SA_JSON: ${{ secrets.GDRIVE_SA_KEY_JSON }}
+          FOLDER_ID: ${{ secrets.GDRIVE_APK_FOLDER_ID }}
+        run: |
+          set -e
+          if [ -z "$SA_JSON" ] || [ -z "$FOLDER_ID" ]; then
+            echo "::error::GDRIVE_SA_KEY_JSON / GDRIVE_APK_FOLDER_ID が未設定です。"
+            exit 1
+          fi
+          brew install rclone
+          echo "$SA_JSON" > "$RUNNER_TEMP/gdrive-sa.json"
+          echo "RCLONE_CONFIG_GDRIVE_TYPE=drive" >> "$GITHUB_ENV"
+          echo "RCLONE_CONFIG_GDRIVE_SERVICE_ACCOUNT_FILE=$RUNNER_TEMP/gdrive-sa.json" >> "$GITHUB_ENV"
+          echo "RCLONE_CONFIG_GDRIVE_ROOT_FOLDER_ID=$FOLDER_ID" >> "$GITHUB_ENV"
+
+      - name: Build and upload apps sequentially
+        env:
+          APPS_FILTER: ${{ inputs.apps }}
+          APPS_READ_PAT: ${{ secrets.APPS_READ_PAT }}
+          P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: temp-ci-keychain-password
+        run: |
+          set -e
+
+          # Apple WWDR中間証明書（chain of trust検証に必要）
+          curl -sSL -o "$RUNNER_TEMP/wwdr_g3.cer" https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+
+          jq -c '.apps[]' apps.json | while read -r app; do
+            key=$(echo "$app" | jq -r '.key')
+            repo=$(echo "$app" | jq -r '.repo')
+            is_private=$(echo "$app" | jq -r '.private')
+            app_subdir=$(echo "$app" | jq -r '.app_subdir')
+            vault_profile=$(echo "$app" | jq -r '.vault_profile // empty')
+            vault_p12=$(echo "$app" | jq -r '.vault_p12 // empty')
+            p12_source_key=$(echo "$app" | jq -r '.p12_source_key // empty')
+            cert_status=$(echo "$app" | jq -r '.cert_status')
+
+            echo "::group::[$key] 対象確認"
+
+            if [ "$APPS_FILTER" != "all" ]; then
+              case ",${APPS_FILTER}," in
+                *",${key},"*) : ;;
+                *) echo "⏭  $key は今回の対象指定 (${APPS_FILTER}) に含まれないためスキップ"; echo "::endgroup::"; continue ;;
+              esac
+            fi
+
+            if [ "$cert_status" != "ready" ]; then
+              echo "⏭  $key は証明書/プロファイルの確認待ち(cert_status=$cert_status)のためスキップ"
+              echo "::endgroup::"
+              continue
+            fi
+
+            if [ -z "$vault_profile" ]; then
+              echo "::warning::$key: provisioning profile がapps.jsonに無いためスキップ"
+              echo "::endgroup::"
+              continue
+            fi
+
+            PROFILE_PATH="_vault_decrypted/${vault_profile}"
+            if [ -n "$vault_p12" ]; then
+              P12_PATH="_vault_decrypted/${vault_p12}"
+            elif [ -n "$p12_source_key" ]; then
+              P12_PATH="_vault_decrypted/${p12_source_key}/ios_distribution.p12"
+            else
+              P12_PATH=""
+            fi
+
+            if [ ! -f "$PROFILE_PATH" ] || [ -z "$P12_PATH" ] || [ ! -f "$P12_PATH" ]; then
+              echo "::warning::$key: 証明書(${P12_PATH:-なし})またはプロファイル(${PROFILE_PATH})が見つからないためスキップ"
+              echo "::endgroup::"
+              continue
+            fi
+
+            if [ -z "$P12_PASSWORD" ]; then
+              echo "::warning::$key: IOS_P12_PASSWORD が未設定のためスキップ"
+              echo "::endgroup::"
+              continue
+            fi
+            echo "::endgroup::"
+
+            echo "::group::[$key] checkout"
+            rm -rf _app
+            if [ "$is_private" = "true" ]; then
+              if [ -z "$APPS_READ_PAT" ]; then
+                echo "::warning::$key: private repo だが APPS_READ_PAT が未設定のためスキップ"
+                echo "::endgroup::"
+                continue
+              fi
+              git clone --depth 1 "https://x-access-token:${APPS_READ_PAT}@github.com/${repo}.git" _app
+            else
+              git clone --depth 1 "https://github.com/${repo}.git" _app
+            fi
+            echo "::endgroup::"
+
+            echo "::group::[$key] 署名用キーチェーンの準備"
+            KEYCHAIN_PATH="$RUNNER_TEMP/${key}-signing.keychain-db"
+            security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+            security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+            security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+            security import "$RUNNER_TEMP/wwdr_g3.cer" -k "$KEYCHAIN_PATH" -T /usr/bin/codesign
+            security import "$P12_PATH" -k "$KEYCHAIN_PATH" -P "$P12_PASSWORD" -T /usr/bin/codesign
+            security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+            cp "$PROFILE_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
+            echo "::endgroup::"
+
+            echo "::group::[$key] flutter build ipa"
+            (
+              cd "_app/${app_subdir}"
+              flutter pub get
+              flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+            )
+            echo "::endgroup::"
+
+            echo "::group::[$key] Google Drive (apk フォルダ) へアップロード"
+            IPA_DIR="_app/${app_subdir}/build/ios/ipa"
+            if ls "$IPA_DIR"/*.ipa >/dev/null 2>&1; then
+              rclone copy "$IPA_DIR" gdrive: --include "*.ipa" -v
+              echo "✅ $key: .ipa をアップロードしました"
+            else
+              echo "::error::$key: .ipa が生成されませんでした"
+            fi
+            echo "::endgroup::"
+
+            echo "::group::[$key] クリーンアップ"
+            security delete-keychain "$KEYCHAIN_PATH" || true
+            security list-keychains -d user -s login.keychain || true
+            rm -f ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision
+            rm -rf _app
+            echo "::endgroup::"
+          done
+
+      - name: Cleanup vault (always)
+        if: always()
+        run: rm -rf _vault _vault_decrypted "$RUNNER_TEMP/gdrive-sa.json"

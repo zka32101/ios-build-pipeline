@@ -1,0 +1,100 @@
+{
+  "_comment": "iOS ビルド対象アプリの一覧。build-ios-apps.yml はこのファイルを読んで、記載順に1アプリずつ直列でビルドする。cert_status が 'ready' 以外のアプリはワークフロー側でスキップされる（証明書/プロファイルが揃うまで対象外）。",
+
+  "apps": [
+    {
+      "key": "kokugo-kore",
+      "display_name": "小学コレ！国語",
+      "repo": "zka32101/kokugo-kore",
+      "private": false,
+      "app_subdir": ".",
+      "bundle_id": "com.yourwish.shougakukore.kokugo",
+      "team_id": "6UWJGP52W5",
+      "vault_profile": "kokugo-kore/KokugoKore_App_Store.mobileprovision",
+      "vault_p12": null,
+      "p12_source_key": "geography_puzzle_king",
+      "cert_status": "needs_confirmation",
+      "cert_note": "vaultにはprovisioning profileのみ。.p12はgeography_puzzle_kingと共用できる想定だが未確認。実行前にユーザー確認が必要。"
+    },
+    {
+      "key": "japan_explorer",
+      "display_name": "Japan Explorer",
+      "repo": "zka32101/japan_explorer",
+      "private": false,
+      "app_subdir": ".",
+      "bundle_id": "com.yourwish.japanexplorer",
+      "team_id": "6UWJGP52W5",
+      "vault_profile": "japan_explorer/JapanExplorer_App_Store.mobileprovision",
+      "vault_p12": null,
+      "p12_source_key": "geography_puzzle_king",
+      "cert_status": "needs_confirmation",
+      "cert_note": "vaultにはprovisioning profileのみ。.p12はgeography_puzzle_kingと共用できる想定だが未確認。実行前にユーザー確認が必要。"
+    },
+    {
+      "key": "geography_puzzle_king",
+      "display_name": "Geography Puzzle King",
+      "repo": "zka32101/geography_puzzle_king",
+      "private": false,
+      "app_subdir": "apps/geography_puzzle_king",
+      "bundle_id": "com.yourwish.nihonryoudodefence",
+      "team_id": null,
+      "vault_profile": "geography_puzzle_king/GeographyPuzzleKing_App_Store.mobileprovision",
+      "vault_p12": "geography_puzzle_king/ios_distribution.p12",
+      "p12_source_key": null,
+      "cert_status": "ready",
+      "cert_note": null
+    },
+    {
+      "key": "kotoba-e",
+      "display_name": "ことばえ",
+      "repo": "zka32101/kotoba-e",
+      "private": false,
+      "app_subdir": ".",
+      "bundle_id": "com.yourwish.kotobae",
+      "team_id": null,
+      "vault_profile": null,
+      "vault_p12": "kotoba-e/ios_distribution.p12",
+      "p12_source_key": null,
+      "cert_status": "needs_confirmation",
+      "cert_note": "vaultには.p12のみでprovisioning profileが無い。配布用provisioning profileの用意が必要。"
+    },
+    {
+      "key": "nihon_future_map",
+      "display_name": "日本未来地図（政策投票マップ）",
+      "repo": "zka32101/geography_puzzle_king",
+      "private": false,
+      "app_subdir": "apps/nihon_future_map",
+      "bundle_id": "com.yourwish.japanfuturemap",
+      "team_id": null,
+      "vault_profile": "nihon_future_map/JapanFutureMap_App_Store.mobileprovision",
+      "vault_p12": "nihon_future_map/ios_distribution.p12",
+      "p12_source_key": null,
+      "cert_status": "ready",
+      "cert_note": "リポジトリ候補が2つ存在(geography_puzzle_king内のapps/nihon_future_mapと、単体repoのseisaku_tohyo_map(private))。CI実績のある前者を採用。要ユーザー最終確認。"
+    },
+    {
+      "key": "okane_kore",
+      "display_name": "お金コレ！",
+      "repo": "zka32101/kinnyu",
+      "private": false,
+      "app_subdir": ".",
+      "bundle_id": "com.yourwish.okanekore",
+      "team_id": null,
+      "vault_profile": "okane_kore/OkaneKore_App_Store.mobileprovision",
+      "vault_p12": "okane_kore/ios_distribution.p12",
+      "p12_source_key": null,
+      "cert_status": "ready",
+      "cert_note": null
+    }
+  ],
+
+  "pending_apps_no_certificate": [
+    "sansu-kore",
+    "eigo",
+    "social_quiz_app",
+    "shogaku-kore-programming",
+    "shinshin",
+    "shougaku-kore-shinshin",
+    "kanken"
+  ]
+}
