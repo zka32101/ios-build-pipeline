@@ -32,10 +32,20 @@ macOS ランナーは GitHub Actions 上で10倍課金になるため、この�
 
 ### 証明書が未発行（対象外。Apple Developer Programでの新規発行が必要）
 
-`sansu-kore`, `eigo`, `social_quiz_app`, `shogaku-kore-programming`,
-`shinshin` / `shougaku-kore-shinshin`, `kanken` ほか小学コレ・Flutterアプリ全般。
+`apps.json` の `pending_apps_no_certificate` に一覧化（リポジトリ・Bundle ID付き）。
 配布用証明書・provisioning profileの発行はユーザー本人のApple Developer Programでの
-操作が必須のため、発行後に `ios-certs-vault` へ追加 → `apps.json` に登録、という流れになる。
+操作が必須のため、発行後に `ios-certs-vault` へ追加 → `apps.json` の `apps` 配列へ昇格、
+という流れになる。
+
+| アプリキー | 内容 | 備考 |
+|---|---|---|
+| `sansu-kore` | 小学コレ！算数 | 証明書一式が未作成 |
+| `shogaku-kore-programming` | 小学コレ！プログラミング | 証明書一式が未作成 |
+| `shinshin` | 小学コレ！道徳 | ⚠️ private repo `shougaku-kore-shinshin` と pubspec name・Bundle IDが完全一致する複製が存在。**どちらを正とするか要ユーザー確認**（`nihon_future_map`と同様のパターン） |
+| `shougaku-kore-shinshin` | 小学コレ！道徳（複製repo候補） | 上記と同一アプリの複製。一本化が必要 |
+| `social_quiz_app` | 小学コレ！社会（推定） | Bundle ID から推定。証明書一式が未作成 |
+| `kanken` | 小学コレ！漢検 | README記載で確認済み。**`ios/`ディレクトリ自体が存在せず、iOSターゲット未作成**。証明書以前にXcodeプロジェクトの作成が必要 |
+| `eigo` | 英語コレ！ | 小学コレ7アプリの正式メンバーか未確認（独立ブランド名・別Bundle ID名前空間）。証明書一式が未作成 |
 
 ## 必要な GitHub Secrets（このリポジトリに設定）
 
