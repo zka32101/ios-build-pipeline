@@ -41,8 +41,7 @@ macOS ランナーは GitHub Actions 上で10倍課金になるため、この�
 |---|---|---|
 | `sansu-kore` | 小学コレ！算数 | 証明書一式が未作成 |
 | `shogaku-kore-programming` | 小学コレ！プログラミング | 証明書一式が未作成 |
-| `shinshin` | 小学コレ！道徳 | ⚠️ private repo `shougaku-kore-shinshin` と pubspec name・Bundle IDが完全一致する複製が存在。**どちらを正とするか要ユーザー確認**（`nihon_future_map`と同様のパターン） |
-| `shougaku-kore-shinshin` | 小学コレ！道徳（複製repo候補） | 上記と同一アプリの複製。一本化が必要 |
+| `shougaku-kore-shinshin` | 小学コレ！道徳 | ユーザーにより一本化済み。旧公開repo`shinshin`は`old-shinshin`にリネームされ、private repoの`shougaku-kore-shinshin`に開発統合された。証明書一式は引き続き未作成 |
 | `social_quiz_app` | 小学コレ！社会（推定） | Bundle ID から推定。証明書一式が未作成 |
 | `kanken` | 小学コレ！漢検 | README記載で確認済み。**`ios/`ディレクトリ自体が存在せず、iOSターゲット未作成**。証明書以前にXcodeプロジェクトの作成が必要 |
 | `eigo` | 英語コレ！ | 小学コレ7アプリの正式メンバーか未確認（独立ブランド名・別Bundle ID名前空間）。証明書一式が未作成 |

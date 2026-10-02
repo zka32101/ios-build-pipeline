@@ -108,20 +108,12 @@
       "note": "小学コレシリーズ(プログラミング)。配布証明書・provisioning profile・ios/ExportOptions.plist 全て未作成。"
     },
     {
-      "key": "shinshin",
-      "display_name": "小学コレ！道徳",
-      "repo": "zka32101/shinshin",
-      "private": false,
-      "bundle_id": "jp.petitworks.shougakuKoreDoutoku",
-      "note": "小学コレシリーズ(道徳)。⚠️ private repo『zka32101/shougaku-kore-shinshin』が同一pubspec name(shougaku_kore_doutoku)・同一Bundle IDの複製として存在することを確認済み(nihon_future_mapと同様のパターン)。どちらを正とするかユーザー確認が必要。配布証明書・provisioning profile・ios/ExportOptions.plist 全て未作成。"
-    },
-    {
       "key": "shougaku-kore-shinshin",
-      "display_name": "小学コレ！道徳（重複repo候補）",
+      "display_name": "小学コレ！道徳",
       "repo": "zka32101/shougaku-kore-shinshin",
       "private": true,
       "bundle_id": "jp.petitworks.shougakuKoreDoutoku",
-      "note": "上記 shinshin と pubspec name・Bundle IDが完全一致する複製repoと判明。どちらかに一本化するかユーザー確認が必要。"
+      "note": "小学コレシリーズ(道徳)。ユーザーにより重複repoが統合済み: 旧公開repo『zka32101/shinshin』は『zka32101/old-shinshin』にリネームされ、こちらのprivate repoに開発が一本化された(2026-10-02時点で直近コミットあり、活発に開発中)。配布証明書・provisioning profile・ios/ExportOptions.plist は引き続き未作成。"
     },
     {
       "key": "social_quiz_app",
