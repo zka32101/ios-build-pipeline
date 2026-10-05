@@ -18,7 +18,7 @@ name: Build iOS Apps (sequential)
 #                         （全て public の場合は未設定でも動くが、無いと private repo はスキップされる）
 #   IOS_P12_PASSWORD      .p12 (配布証明書) のPKCS12パスワード
 #                         （全アプリで共通の場合のみ。アプリ毎に異なる場合は要拡張）
-#   GDRIVE_SA_KEY_JSON    Google Drive サービスアカウントキー(JSON)の中身そのもの
+#   （Drive認証はWorkload Identity Federation。SAキーは不要）
 #   GDRIVE_APK_FOLDER_ID  アップロード先 Drive フォルダ（apkフォルダ）のフォルダID
 #
 # 詳しいセットアップ手順は README.md を参照。
@@ -40,6 +40,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   build:
@@ -83,20 +84,32 @@ jobs:
           cd ..
           find _vault_decrypted -type f
 
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        id: gauth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/663640153690/locations/global/workloadIdentityPools/ios-build-pool/providers/github
+          service_account: ios-build-drive-uploader@app1-6c108.iam.gserviceaccount.com
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/drive
+          access_token_lifetime: 3600s
+          create_credentials_file: false
+
       - name: Setup Google Drive (rclone)
         env:
-          SA_JSON: ${{ secrets.GDRIVE_SA_KEY_JSON }}
           FOLDER_ID: ${{ secrets.GDRIVE_APK_FOLDER_ID }}
+          GCP_TOKEN: ${{ steps.gauth.outputs.access_token }}
         run: |
           set -e
-          if [ -z "$SA_JSON" ] || [ -z "$FOLDER_ID" ]; then
-            echo "::error::GDRIVE_SA_KEY_JSON / GDRIVE_APK_FOLDER_ID が未設定です。"
+          if [ -z "$FOLDER_ID" ]; then
+            echo "::error::GDRIVE_APK_FOLDER_ID が未設定です。"
             exit 1
           fi
           brew install rclone
-          echo "$SA_JSON" > "$RUNNER_TEMP/gdrive-sa.json"
+          echo "::add-mask::$GCP_TOKEN"
           echo "RCLONE_CONFIG_GDRIVE_TYPE=drive" >> "$GITHUB_ENV"
-          echo "RCLONE_CONFIG_GDRIVE_SERVICE_ACCOUNT_FILE=$RUNNER_TEMP/gdrive-sa.json" >> "$GITHUB_ENV"
+          echo "RCLONE_CONFIG_GDRIVE_SCOPE=drive" >> "$GITHUB_ENV"
+          echo "RCLONE_CONFIG_GDRIVE_TOKEN={\"access_token\":\"$GCP_TOKEN\",\"token_type\":\"Bearer\",\"expiry\":\"2099-01-01T00:00:00Z\"}" >> "$GITHUB_ENV"
           echo "RCLONE_CONFIG_GDRIVE_ROOT_FOLDER_ID=$FOLDER_ID" >> "$GITHUB_ENV"
 
       - name: Build and upload apps sequentially
